@@ -2668,12 +2668,24 @@ class sint(_secret, _int):
         self._store_in_mem(address, stms, stmsi)
 
     @classmethod
-    def direct_matrix_mul(cls, A, B, n, m, l, reduce=None, indices=None):
+    def direct_matrix_mul(cls, A, B, n, m, l, reduce=None, indices=None, indices_values=None):
         if indices is None:
             indices = [regint.inc(i) for i in (n, m, m, l)]
+            indices_values = [list(range(i)) for i in (n, m, m, l)]
         res = cls(size=indices[0].size * indices[3].size)
+
+        if isinstance(A, int) and isinstance(B, int):
+            first_factor_base_addresses = [A]
+            second_factor_base_addresses = [B]
+        else:
+            first_factor_base_addresses = None
+            second_factor_base_addresses = None
+
         matmulsm(res, regint(A), regint(B), len(indices[0]), len(indices[1]),
-                 len(indices[3]), *(list(indices) + [m, l]))
+                 len(indices[3]), *(list(indices) + [m, l]),
+                 first_factor_base_addresses=first_factor_base_addresses,
+                 second_factor_base_addresses=second_factor_base_addresses,
+                 indices_values=indices_values)
         return res
 
     @vectorize_init
@@ -4579,6 +4591,14 @@ class _fix(_single):
             self.f = f
         assert k is not None
         assert f is not None
+        def adjust(v):
+            f_diff = v.f - f
+            v = v.v
+            if f_diff < 0:
+                v <<= -f_diff
+            elif f_diff > 0:
+                v >>= f_diff
+            return v
         if _v is None:
             self.v = self.int_type(0)
         elif isinstance(_v, self.int_type):
@@ -4593,17 +4613,14 @@ class _fix(_single):
         elif isinstance(_v, type(self)):
             self.v = _v.v
         elif isinstance(_v, cfix):
-            assert _v.f <= self.f
-            self.v = self.int_type(_v.v << (self.f - _v.f))
+            self.v = self.int_type(adjust(_v))
         elif isinstance(_v, (MemValue, MemFix)):
             #this is a memvalue object
             self.v = type(self)(_v.read()).v
         elif isinstance(_v, (list, tuple)):
             self.v = self.int_type(list(self.conv(x).v for x in _v))
         elif isinstance(_v, personal):
-            assert _v._v.f == f
-            assert _v._v.k == k
-            self.v = self.int_type(personal(_v.player, _v._v.v))
+            self.v = self.int_type(personal(_v.player, adjust(_v._v)))
         else:
             raise CompilerError('cannot convert %s to sfix' % _v)
         if not isinstance(self.v, self.int_type):
