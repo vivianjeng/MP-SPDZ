@@ -106,6 +106,7 @@ def test_where_success():
 def test_join_success():
     M = mpcstats_lib.MAGIC_NUMBER
 
+    # 1. 0 and 3 of col 0 mat 1 match 3 and 0 in col 0 mat 2
     execute_join_test(
         mpcstats_lib.join,
         [
@@ -128,3 +129,138 @@ def test_join_success():
         ],
     )
 
+    # 2. the same as 1 except that mat 2 has 3 columns
+    execute_join_test(
+        mpcstats_lib.join,
+        [
+            [
+                [0, 1, 2, 3],
+                [152, 160, 170, 180],
+            ],
+            [
+                [3, 0, 4],
+                [50, 60, 70],
+                [12, 34, 56],
+            ],
+        ],
+        0,
+        0,
+        [
+            [0, 1, 2, 3],
+            [152, 160, 170, 180],
+            [0, M, M, 3],
+            [60, M, M, 50],
+            [34, M, M, 12],
+        ],
+    )
+
+    # 3. col 0 mat 1 and col 1 mat 2 have no elems in common
+    execute_join_test(
+        mpcstats_lib.join,
+        [
+            [
+                [0, 1, 2, 3],
+                [152, 160, 170, 180],
+            ],
+            [
+                [3, 0, 4],
+                [50, 60, 70],
+            ],
+        ],
+        0,
+        1,
+        [
+            [0, 1, 2, 3],
+            [152, 160, 170, 180],
+            [M, M, M, M],
+            [M, M, M, M],
+        ],
+    )
+
+    # 4. No elems in col 1 mat 2 matches elems in col 0 mat 1
+    execute_join_test(
+        mpcstats_lib.join,
+        [
+            [
+                [0, 1, 2, 3],
+                [152, 160, 170, 180],
+            ],
+            [
+                [3, 1, 0, 2],
+                [50, 60, 70, 80],
+            ],
+        ],
+        0,
+        0,
+        [
+            [0, 1, 2, 3],
+            [152, 160, 170, 180],
+            [0, 1, 2, 3],
+            [70, 60, 80, 50],
+        ],
+    )
+
+    # 5. mat 2 has 1 column only
+    execute_join_test(
+        mpcstats_lib.join,
+        [
+            [
+                [0, 1, 2, 3],
+                [152, 160, 170, 180],
+            ],
+            [
+                [9, 11, 0, 2],
+            ],
+        ],
+        0,
+        0,
+        [
+            [0, 1, 2, 3],
+            [152, 160, 170, 180],
+            [0, M, 2, M],
+        ],
+    )
+
+    # 6. mat 1 has 1 column only <- fails
+    execute_join_test(
+        mpcstats_lib.join,
+        [
+            [
+                [0, 1, 2, 3],
+            ],
+            [
+                [3, 0, 1],
+                [50, 60, 70],
+            ],
+        ],
+        0,
+        0,
+        [
+            [0, 1, 2, 3],
+            [0, 1, M, 3],
+            [60, 70, M, 50],
+        ],
+    )
+
+    # 7. mat 2 has more rows than mat 1
+    execute_join_test(
+        mpcstats_lib.join,
+        [
+            [
+                [0, 1],
+                [10, 20],
+            ],
+            [
+                [3, 1, 9],
+                [50, 60, 70],
+            ],
+        ],
+        0,
+        0,
+        [
+            [0, 1],
+            [10, 20],
+            [M, 1],
+            [M, 60],
+        ],
+    )
