@@ -8,7 +8,6 @@ from Compiler.util import if_else
 from Compiler.mpc_math import sqrt, exp2_fx, log2_fx
 
 
-# geometric_mean assumes MAGIC_NUMBER to be non-negative
 MAGIC_NUMBER = 999
 
 # To enforce round to the nearest integer, instead of probabilistic truncation
