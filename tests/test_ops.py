@@ -177,7 +177,7 @@ def test_join_success():
         ],
     )
 
-    # 4. No elems in col 1 mat 2 matches elems in col 0 mat 1
+    # 4. Every element in col 0 mat 1 has a match in col 0 mat 2
     execute_join_test(
         mpcstats_lib.join,
         [
