@@ -52,8 +52,8 @@ def run_mpcstats_func(
     cmd = f'PLAYERS={num_parties} {mpc_script} {prog}'
 
     try:
-        res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        return (res.stdout, res.returncode)
+        res = subprocess.run(cmd, shell=True, capture_output=True, check=True, text=True)
+        return res.stdout
 
     except subprocess.CalledProcessError as e:
         raise Exception(f'Executing MPC failed ({e.returncode}): stdout: {e.stdout}, stderr: {e.stderr}')
@@ -128,8 +128,7 @@ def run_pystats_func(
     else:
         raise Exception(f'# of func params is expected to be 1 or 2, but got {num_params}')
 
-def extract_result_from_mpspdz_out(out):
-    stdout, _ = out
+def extract_result_from_mpspdz_stdout(stdout):
     succ_re = r'^result: (.*)$'
     fail_re = r'^User exception: (.*)$'
 
@@ -167,13 +166,13 @@ def execute_stat_func_test(
     protocol = 'semi'
     mpc_script = root / 'Scripts' / f'{protocol}.sh'
     num_parties = len(player_data)
-    mpspdz_out = run_mpcstats_func(
+    mpspdz_stdout = run_mpcstats_func(
         computation,
         num_parties,
         mpc_script,
         'testmpc',
     )
-    mpspdz_res = extract_result_from_mpspdz_out(mpspdz_out)
+    mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
 
     assert mpspdz_res[0] is True
 
@@ -208,13 +207,13 @@ def execute_elem_filter_test(
     protocol = 'semi'
     mpc_script = root / 'Scripts' / f'{protocol}.sh'
     num_parties = len(player_data)
-    mpspdz_out = run_mpcstats_func(
+    mpspdz_stdout = run_mpcstats_func(
         computation,
         num_parties,
         mpc_script,
         'testmpc',
     )
-    mpspdz_res = extract_result_from_mpspdz_out(mpspdz_out)
+    mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
     mpspdz_res_val = ast.literal_eval(mpspdz_res[1]) 
 
     assert mpspdz_res[0] is True
@@ -232,13 +231,6 @@ def execute_join_test(
     data_dir = root / "Player-Data"
     create_player_data_files(data_dir, player_data)
 
-    # compile a dummy .x to define curr_tape that is required by Matrix constructor
-    compiler = Compiler()
-    def dummy_comp():
-        pass
-    compiler.register_function('')(dummy_comp)
-    compiler.compile_func()
-
     def computation():
         ms = load_to_matrices(player_data)
         res = func(
@@ -252,13 +244,13 @@ def execute_join_test(
     protocol = 'semi'
     mpc_script = root / 'Scripts' / f'{protocol}.sh'
     num_parties = len(player_data)
-    mpspdz_out = run_mpcstats_func(
+    mpspdz_stdout = run_mpcstats_func(
         computation,
         num_parties,
         mpc_script,
         'testmpc',
     )
-    mpspdz_res = extract_result_from_mpspdz_out(mpspdz_out)
+    mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
     mpspdz_res_val = ast.literal_eval(mpspdz_res[1]) 
     print(mpspdz_res_val)
 

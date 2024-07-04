@@ -8,7 +8,6 @@ from Compiler.util import if_else
 from Compiler.mpc_math import sqrt, exp2_fx, log2_fx
 
 
-# geometric_mean assumes MAGIC_NUMBER to be non-negative
 MAGIC_NUMBER = 999
 
 # To enforce round to the nearest integer, instead of probabilistic truncation
@@ -106,7 +105,7 @@ def join(data1: Matrix, data2: Matrix, data1_column_index: int, data2_column_ind
     # Initialize the rest of the matrix with MAGIC_NUMBER
     for i in range(num_columns_2):
         for j in range(num_rows_1):
-            new_data[num_columns_2 + i][j] = MAGIC_NUMBER
+            new_data[num_columns_1 + i][j] = MAGIC_NUMBER
 
     # Check the matching index in data1 and data2
     for i in range(num_rows_1):
