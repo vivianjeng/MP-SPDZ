@@ -221,7 +221,7 @@ def test_join_success():
         ],
     )
 
-    # 6. mat 1 has 1 column only <- fails
+    # 6. mat 1 has 1 column only
     execute_join_test(
         mpcstats_lib.join,
         [
