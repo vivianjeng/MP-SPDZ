@@ -264,3 +264,26 @@ def test_join_success():
             [M, 60],
         ],
     )
+
+    # 8. mat 2 has multiple matches for a mat 1 key
+    execute_join_test(
+        mpcstats_lib.join,
+        [
+            [
+                [0, 1],
+                [10, 20],
+            ],
+            [
+                [3, 1, 9, 1],
+                [50, 60, 70, 80],
+            ],
+        ],
+        0,
+        0,
+        [
+            [0, 1],
+            [10, 20],
+            [M, 1],
+            [M, 80],
+        ],
+    )
