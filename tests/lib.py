@@ -109,6 +109,24 @@ def gen_player_data(
 
     return res
 
+def gen_player_data_for_1_param_func(
+    col,
+    num_parties,
+    selected_col
+):
+    m = []
+    dummy_col = [0 for _ in range(len(col))]
+
+    for _ in range(num_parties):
+        party_data = []
+        for col_idx in range(selected_col + 1):
+            if col_idx == selected_col:
+                party_data.append(col)
+            else:
+                party_data.append(dummy_col)
+        m.append(party_data)
+    return m
+
 def run_pystats_func(
     player_data,
     num_params,
@@ -130,17 +148,12 @@ def run_pystats_func(
 
 def extract_result_from_mpspdz_stdout(stdout):
     succ_re = r'^result: (.*)$'
-    fail_re = r'^User exception: (.*)$'
 
     for line in stdout.splitlines():
         succ_m = re.search(succ_re, line)
         if succ_m:
-            return (True, succ_m.group(1))
+            return succ_m.group(1)
 
-        fail_m = re.search(fail_re, line)
-        if fail_m:
-            return (False, fail_m.group(1))
-            
     raise Exception('Result missing in MP-SPDZ output')
 
 def execute_stat_func_test(
@@ -174,15 +187,13 @@ def execute_stat_func_test(
     )
     mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
 
-    assert mpspdz_res[0] is True
-
     pystats_res = run_pystats_func(
         player_data,
         num_params,
         selected_col,
         pystats_func,
     )
-    assert abs(float(mpspdz_res[1]) - pystats_res) < tolerance
+    assert abs(float(mpspdz_res) - pystats_res) < tolerance
 
 def execute_elem_filter_test(
     func,
@@ -214,9 +225,8 @@ def execute_elem_filter_test(
         'testmpc',
     )
     mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
-    mpspdz_res_val = ast.literal_eval(mpspdz_res[1]) 
+    mpspdz_res_val = ast.literal_eval(mpspdz_res) 
 
-    assert mpspdz_res[0] is True
     assert mpspdz_res_val == exp
 
 def execute_join_test(
@@ -251,17 +261,7 @@ def execute_join_test(
         'testmpc',
     )
     mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
-    mpspdz_res_val = ast.literal_eval(mpspdz_res[1]) 
-    print(mpspdz_res_val)
+    mpspdz_res_val = ast.literal_eval(mpspdz_res) 
 
-    assert mpspdz_res[0] is True
     assert mpspdz_res_val == exp_m
-
-def run_func_many_times_with_random_data(
-    mpcstats_func,
-    pystats_func,
-    num_interation,
-    gen_player_data,
-):
-    raise NotImplementedError(__name__)
 

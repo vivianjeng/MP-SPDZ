@@ -181,15 +181,52 @@ def geometric_mean(data: list[sint]):
 
     return exp2_fx(exponent)
 
+
+def mode(data: list[sint]):
+    n = len(data)
+    data = Array.create_from(data)
+    freqs = sint.Array(n)
+
+    # find frequency of each element in data
+    @for_range(n)
+    def _(i):
+        freqs[i] = sum(if_else(x == data[i], 1, 0) for x in data)
+
+    # set the frequencies of the magic number to zero
+    @for_range(n)
+    def _(i):
+        freqs[i] = sum(if_else(x == MAGIC_NUMBER, 0, freqs[i]) for x in data)
+
+    # find the highest frequency
+    highest_freq = sint(0)
+    @for_range(n)
+    def _(i):
+        highest_freq.update(
+            if_else(freqs[i].greater_than(highest_freq),
+                freqs[i],
+                highest_freq
+        ))
+
+    # get the first elem in data with the highest frequency
+    highest = sint(0)
+
+    # reverse the data to select the first element with the highest
+    # frequency, aligning with the behavior of its python counterpart
+    rev_data = Array.create_from(data.get_reverse_vector())
+
+    @for_range(n)
+    def _(i):
+        highest.update(if_else(freqs[i] == highest_freq,
+            rev_data[i],
+            highest
+        ))
+
+    return highest
+
 # LATER
 
 def harmonic_mean(data: list[sint]):
     # TODO: implement harmonic_mean
-    raise NotImplementedError
-
-
-def mode(data: list[sint]):
-    # TODO: implement mode
     raise NotImplementedError
 
 

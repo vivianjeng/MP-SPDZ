@@ -1,7 +1,7 @@
 import pytest, statistics
 
 import mpcstats_lib
-from .lib import execute_elem_filter_test, execute_join_test, execute_stat_func_test
+from .lib import execute_elem_filter_test, execute_join_test, execute_stat_func_test, gen_player_data_for_1_param_func
 
 player_data_4x2_2_party = [
     # party 0
@@ -15,6 +15,12 @@ player_data_4x2_2_party = [
         [50, 60, 70, 100],
     ]
 ]
+
+M = mpcstats_lib.MAGIC_NUMBER
+
+def pd1(col):
+    return gen_player_data_for_1_param_func(col, 2, 1)
+
 
 def test_correlation_success():
     execute_stat_func_test(
@@ -57,8 +63,6 @@ def test_median_success():
     )
 
 def test_where_success():
-    M = mpcstats_lib.MAGIC_NUMBER
-
     player_data = [
         [
             [-123, 0, 20, 40],
@@ -104,8 +108,6 @@ def test_where_success():
     )
 
 def test_join_success():
-    M = mpcstats_lib.MAGIC_NUMBER
-
     # 1. 0 and 3 of col 0 mat 1 match 3 and 0 in col 0 mat 2
     execute_join_test(
         mpcstats_lib.join,
@@ -286,4 +288,46 @@ def test_join_success():
             [M, 1],
             [M, 80],
         ],
+    )
+
+def test_mode_success():
+    test_cases = [
+        pd1([11, 100, 100, M]),
+        pd1([M, 11, 100, M, M]), # 11 should be selected
+        pd1([1, 2, 2, 3, 3, 5]),
+        pd1([1, 2, 2, 3, 3, 5]), # 2 should be selected
+        pd1([1, 2, 3, 4, 5, 6]), # 1 should be selected
+    ]
+
+    for tc in test_cases:
+        execute_stat_func_test(
+            mpcstats_lib.mode,
+            statistics.mode,
+            num_params = 1,
+            player_data = tc,
+            selected_col = 1,
+            tolerance = 0.01,
+        )
+
+@pytest.mark.xfail(raises=IndexError, reason='list index out of range')
+def test_mode_fail_empty_input():
+    execute_stat_func_test(
+        mpcstats_lib.mode,
+        statistics.mode,
+        num_params = 1,
+        player_data = pd1([]),
+        selected_col = 1,
+        tolerance = 0.01,
+    )
+
+
+@pytest.mark.xfail(raises=IndexError, reason='list index out of range')
+def test_mode_fail_all_magic_numbers():
+    execute_stat_func_test(
+        mpcstats_lib.mode,
+        statistics.mode,
+        num_params = 1,
+        player_data = pd1([M, M, M, M]),
+        selected_col = 1,
+        tolerance = 0.01,
     )
