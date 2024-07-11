@@ -210,14 +210,10 @@ def mode(data: list[sint]):
     # get the first elem in data with the highest frequency
     highest = sint(0)
 
-    # reverse the data to select the first element with the highest
-    # frequency, aligning with the behavior of its python counterpart
-    rev_data = Array.create_from(data.get_reverse_vector())
-
-    @for_range(n)
+    @for_range(n-1, -1, -1)
     def _(i):
         highest.update(if_else(freqs[i] == highest_freq,
-            rev_data[i],
+            data[i],
             highest
         ))
 
