@@ -209,7 +209,6 @@ def mode(data: list[sint]):
 
     # get the first elem in data with the highest frequency
     highest = sint(0)
-
     @for_range(n-1, -1, -1)
     def _(i):
         highest.update(if_else(freqs[i] == highest_freq,
