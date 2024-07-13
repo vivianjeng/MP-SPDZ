@@ -184,24 +184,32 @@ def geometric_mean(data: list[sint]):
 
 def mode(data: list[sint]):
     data = Array.create_from(data)
-    data.sort()
 
-    freq = sint(1)
+    # handle special case where # of elems is 1 and sort() fails
+    if len(data) == 1:
+        return data[0]
+    else:
+        data.sort()
+
+    freq = sint(0)
     max_freq = sint(0)
-    mf_elem = data[0] # most frequently appearing element
+    mf_elem = sint(MAGIC_NUMBER)
+    prev = sint(MAGIC_NUMBER)
 
-    for i, curr in enumerate(data[1:]):
-        prev = data[i]
-
+    for i, curr in enumerate(data):
         # compare curr and prev, if the same, increase the freq. otherwise, curr elem differs from the prev one, so reset the freq
         freq.update(if_else(curr == prev, freq + 1, sint(1)))
 
+        # if current element is magic number, set the frequency to 0 
+        freq.update(if_else(curr == MAGIC_NUMBER, sint(0), freq))
+
         # if curr freq exceeds the maximum, update the max element 
-        # uses prev since curr and prev may differ
-        mf_elem.update(if_else(freq > max_freq, prev, mf_elem))
+        mf_elem.update(if_else(freq > max_freq, curr, mf_elem))
 
         # if curr freq exceeds the maximum, update the max freq too
         max_freq.update(if_else(freq > max_freq, freq, max_freq))
+
+        prev = curr
 
     return mf_elem
 

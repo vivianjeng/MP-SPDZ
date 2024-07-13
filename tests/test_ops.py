@@ -292,11 +292,18 @@ def test_join_success():
 
 def test_mode_success():
     test_cases = [
-        # pd1([11, 100, 100, M]),
-        # pd1([M, 11, 100, M, M]), # 11 should be selected
+        pd1([11, 100, 100, M]),
+        pd1([M, 100, 100, 9]),
+        pd1([M, 11, 100, 5, M]),
+        pd1([1]),
+        pd1([1, 2]),
+        pd1([1, 2, 2]),
+        pd1([1, 1, 2]),
+        pd1([1, 1, 2, 2]),
+        pd1([1, 3, 3, 2, 2, 5]),
         pd1([1, 2, 2, 3, 3, 5]),
-        pd1([1, 2, 2, 3, 3, 5]), # 2 should be selected
-        pd1([1, 2, 3, 4, 5, 6]), # 1 should be selected
+        pd1([1, 2, 3, 4, 5, 6]),
+        pd1([6, 5, 4, 3, 2, 1]),
     ]
 
     for tc in test_cases:
@@ -307,6 +314,7 @@ def test_mode_success():
             player_data = tc,
             selected_col = 1,
             tolerance = 0.01,
+            py_data_filter = lambda xs: sorted(xs), 
         )
 
 @pytest.mark.xfail(raises=IndexError, reason='list index out of range')
@@ -321,7 +329,7 @@ def test_mode_fail_empty_input():
     )
 
 
-@pytest.mark.xfail(raises=IndexError, reason='list index out of range')
+@pytest.mark.xfail(raises=statistics.StatisticsError, reason='no mode for empty data')
 def test_mode_fail_all_magic_numbers():
     execute_stat_func_test(
         mpcstats_lib.mode,

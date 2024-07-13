@@ -127,21 +127,26 @@ def gen_player_data_for_1_param_func(
         m.append(party_data)
     return m
 
+def exclude_magic_number(col):
+    return [x for x in col if x != MAGIC_NUMBER]
+
 def run_pystats_func(
     player_data,
     num_params,
     selected_col,
     func,
+    py_data_filter,
 ): 
     party_ids = list(range(num_params))
     col1 = player_data[party_ids[0]][selected_col]
+    col1 = py_data_filter(exclude_magic_number(col1))
 
     if num_params == 1:
         return func(col1) 
 
     elif num_params == 2:
         col2 = player_data[party_ids[1]][selected_col]
-
+        col2 = py_data_filter(exclude_magic_number(col2))
         return func(col1, col2) 
     else:
         raise Exception(f'# of func params is expected to be 1 or 2, but got {num_params}')
@@ -163,6 +168,7 @@ def execute_stat_func_test(
     player_data,
     selected_col,
     tolerance,
+    py_data_filter = lambda xs: xs,
 ):
     computation = gen_stat_func_comp(
         player_data,
@@ -192,8 +198,8 @@ def execute_stat_func_test(
         num_params,
         selected_col,
         pystats_func,
+        py_data_filter,
     )
-    print(f'mp: {mpspdz_res}, py: {pystats_res}')
     assert abs(float(mpspdz_res) - pystats_res) < tolerance
 
 def execute_elem_filter_test(
