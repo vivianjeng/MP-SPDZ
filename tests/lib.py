@@ -193,6 +193,7 @@ def execute_stat_func_test(
         selected_col,
         pystats_func,
     )
+    print(f'mp: {mpspdz_res}, py: {pystats_res}')
     assert abs(float(mpspdz_res) - pystats_res) < tolerance
 
 def execute_elem_filter_test(
