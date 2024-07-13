@@ -292,9 +292,11 @@ def test_join_success():
 
 def test_mode_success():
     test_cases = [
+        pd1([11, 99, 100, M]),
         pd1([11, 100, 100, M]),
         pd1([M, 100, 100, 9]),
-        pd1([M, 11, 100, 5, M]),
+        pd1([M, 11, 100, 5]),
+        pd1([M, 11, 100, M]),
         pd1([1]),
         pd1([1, 2]),
         pd1([1, 2, 2]),
@@ -314,7 +316,6 @@ def test_mode_success():
             player_data = tc,
             selected_col = 1,
             tolerance = 0.01,
-            py_data_filter = lambda xs: sorted(xs), 
         )
 
 @pytest.mark.xfail(raises=IndexError, reason='list index out of range')

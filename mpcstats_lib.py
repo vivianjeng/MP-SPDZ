@@ -183,35 +183,35 @@ def geometric_mean(data: list[sint]):
 
 
 def mode(data: list[sint]):
+    n = len(data)
     data = Array.create_from(data)
+    freqs = sint.Array(n)
 
-    # handle special case where # of elems is 1 and sort() fails
-    if len(data) == 1:
-        return data[0]
-    else:
-        data.sort()
+    # find frequency of each element in data
+    for i, x in enumerate(data):
+        freqs[i] = if_else(x == MAGIC_NUMBER, 0,
+            sum(if_else(x == data[i], 1, 0) for x in data))
 
-    freq = sint(0)
-    max_freq = sint(0)
-    mf_elem = sint(MAGIC_NUMBER)
-    prev = sint(MAGIC_NUMBER)
+    # find the highest frequency
+    highest_freq = sint(0)
+    @for_range(n)
+    def _(i):
+        highest_freq.update(
+            if_else(freqs[i].greater_than(highest_freq),
+                freqs[i],
+                highest_freq
+        ))
 
-    for i, curr in enumerate(data):
-        # compare curr and prev, if the same, increase the freq. otherwise, curr elem differs from the prev one, so reset the freq
-        freq.update(if_else(curr == prev, freq + 1, sint(1)))
+    # get the first occurrence of the highest frequency element in data
+    highest = sint(0)
+    @for_range(n-1, -1, -1)
+    def _(i):
+        highest.update(if_else(freqs[i] == highest_freq,
+            data[i],
+            highest
+        ))
 
-        # avoid magic number to become mf_elem by setting the frequency to 0 
-        freq.update(if_else(curr == MAGIC_NUMBER, sint(0), freq))
-
-        # if curr freq exceeds the maximum, update the max element 
-        mf_elem.update(if_else(freq > max_freq, curr, mf_elem))
-
-        # if curr freq exceeds the maximum, update the max freq too
-        max_freq.update(if_else(freq > max_freq, freq, max_freq))
-
-        prev = curr
-
-    return mf_elem
+    return highest
 
 # LATER
 
