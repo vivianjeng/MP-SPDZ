@@ -200,7 +200,7 @@ def mode(data: list[sint]):
         # compare curr and prev, if the same, increase the freq. otherwise, curr elem differs from the prev one, so reset the freq
         freq.update(if_else(curr == prev, freq + 1, sint(1)))
 
-        # if current element is magic number, set the frequency to 0 
+        # avoid magic number to become mf_elem by setting the frequency to 0 
         freq.update(if_else(curr == MAGIC_NUMBER, sint(0), freq))
 
         # if curr freq exceeds the maximum, update the max element 
