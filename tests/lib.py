@@ -204,9 +204,9 @@ def execute_stat_func_test(
         pystats_res = vector_res_parser(pystats_res)
 
         for mp, py in zip(mpspdz_res, pystats_res):
-            print(f'mp={mp}, py={py}')
             assert abs(float(mp) - py) < tolerance
     else:
+        print(f'mp={float(mpspdz_res)}, py={float(pystats_res)}')
         assert abs(float(mpspdz_res) - pystats_res) < tolerance
 
 def execute_elem_filter_test(

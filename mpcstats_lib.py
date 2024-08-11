@@ -139,7 +139,7 @@ def covariance(data1: list[sint], data2: list[sint]):
     @for_range(n)
     def _(i):
         x.update(x+(data1[i]-mean1)*(data2[i]-mean2))
-    return x/count
+    return x/(count-1)
 
 
 def correlation(data1: list[sint], data2: list[sint]):
