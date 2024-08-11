@@ -1,7 +1,7 @@
 import pytest, statistics
 
 import mpcstats_lib
-from .lib import execute_elem_filter_test, execute_join_test, execute_stat_func_test, gen_player_data_for_1_param_func
+from .lib import execute_elem_filter_test, execute_join_test, execute_stat_func_test, gen_player_data_for_1_param_func, gen_player_data
 
 player_data_4x2_2_party = [
     # party 0
@@ -329,7 +329,6 @@ def test_mode_fail_empty_input():
         tolerance = 0.01,
     )
 
-
 @pytest.mark.xfail(raises=statistics.StatisticsError, reason='no mode for empty data')
 def test_mode_fail_all_magic_numbers():
     execute_stat_func_test(
@@ -340,3 +339,19 @@ def test_mode_fail_all_magic_numbers():
         selected_col = 1,
         tolerance = 0.01,
     )
+
+def test_linear_regression_success():
+    def vector_res_parser(x):
+        return [x.slope, x.intercept]
+
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0)
+    execute_stat_func_test(
+        mpcstats_lib.linear_regression,
+        statistics.linear_regression,
+        num_params = 2,
+        player_data = player_data,
+        selected_col = 1,
+        tolerance = 0.01,
+        vector_res_parser = vector_res_parser,
+    )
+

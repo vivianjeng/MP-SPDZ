@@ -139,7 +139,7 @@ def covariance(data1: list[sint], data2: list[sint]):
     @for_range(n)
     def _(i):
         x.update(x+(data1[i]-mean1)*(data2[i]-mean2))
-    return x/(count-1)
+    return x/count
 
 
 def correlation(data1: list[sint], data2: list[sint]):
@@ -213,6 +213,49 @@ def mode(data: list[sint]):
 
     return highest
 
+
+def variance(data: list[sint]):
+    # calculate mean of the data excluding magic numbers
+    eff_size = sum(if_else(n != MAGIC_NUMBER, 1, 0) for n in data)
+    eff_total = sum(if_else(n != MAGIC_NUMBER, n, 0) for n in data)
+    mean = eff_total / eff_size
+
+    # replace magic number w/ mean to make 'n - mean' below zero
+    data = Array.create_from(if_else(n != MAGIC_NUMBER, n, mean) for n in data)
+
+    var_sum = sfloat(0)
+    for n in data:
+        var_sum += (n - mean) ** 2
+
+    var_size = len(data)
+    return var_sum / var_size
+
+
+def linear_regression(xs: list[sint], ys: list[sint]):
+    # each element in zip(xs, ys) is a data point, so
+    # xs and ys are assumed to have the same size
+
+    # calculate means of xs and ys
+    x_mean = mean(xs)
+    y_mean = mean(ys)
+
+    xs = Array.create_from(xs)
+    ys = Array.create_from(ys)
+
+    # caclulate covariance of xs and ys
+    covar = covariance(xs, ys)
+
+    # calculate variance of xs
+    var = variance(xs)
+
+    slope = covar / var
+    intercept = y_mean - slope * x_mean
+
+    res = sfix.Array(2)
+    res.assign([slope, intercept])
+    return res
+
+
 # LATER
 
 def harmonic_mean(data: list[sint]):
@@ -234,12 +277,3 @@ def stdev(data: list[sint]):
     # TODO: implement stdev
     raise NotImplementedError
 
-
-def variance(data: list[sint]):
-    # TODO: implement variance
-    raise NotImplementedError
-
-
-def linear_regression(data1: list[sint], data2: list[sint]):
-    # TODO: implement linear_regression
-    raise NotImplementedError

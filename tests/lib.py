@@ -167,6 +167,7 @@ def execute_stat_func_test(
     player_data,
     selected_col,
     tolerance,
+    vector_res_parser = None, # None or callable 
 ):
     computation = gen_stat_func_comp(
         player_data,
@@ -197,8 +198,16 @@ def execute_stat_func_test(
         selected_col,
         pystats_func,
     )
-    print(f'---> mp: {mpspdz_res}, py: {pystats_res}')
-    assert abs(float(mpspdz_res) - pystats_res) < tolerance
+
+    if callable(vector_res_parser):
+        mpspdz_res = ast.literal_eval(mpspdz_res) 
+        pystats_res = vector_res_parser(pystats_res)
+
+        for mp, py in zip(mpspdz_res, pystats_res):
+            print(f'mp={mp}, py={py}')
+            assert abs(float(mp) - py) < tolerance
+    else:
+        assert abs(float(mpspdz_res) - pystats_res) < tolerance
 
 def execute_elem_filter_test(
     func,
