@@ -227,7 +227,7 @@ def variance(data: list[sint]):
     for n in data:
         var_sum += (n - mean) ** 2
 
-    var_size = len(data)
+    var_size = len(data) - 1
     return var_sum / var_size
 
 
