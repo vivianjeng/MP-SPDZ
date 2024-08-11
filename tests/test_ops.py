@@ -340,6 +340,17 @@ def test_mode_fail_all_magic_numbers():
         tolerance = 0.01,
     )
 
+def test_variance_success():
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0)
+    execute_stat_func_test(
+        mpcstats_lib.variance,
+        statistics.variance,
+        num_params = 1,
+        player_data = player_data,
+        selected_col = 1,
+        tolerance = 0.01,
+    )
+
 def test_linear_regression_success():
     def vector_res_parser(x):
         return [x.slope, x.intercept]
