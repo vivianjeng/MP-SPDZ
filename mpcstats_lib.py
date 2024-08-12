@@ -220,15 +220,15 @@ def variance(data: list[sint]):
     eff_total = sum(if_else(n != MAGIC_NUMBER, n, 0) for n in data)
     mean = eff_total / eff_size
 
-    # replace magic number w/ mean to make 'n - mean' below zero
+    # replace magic number w/ mean to skip magic number in for loop below
     data = Array.create_from(if_else(n != MAGIC_NUMBER, n, mean) for n in data)
 
-    var_sum = sfloat(0)
+    eff_data_sum = sfloat(0)
     for n in data:
-        var_sum += (n - mean) ** 2
+        eff_data_sum += (n - mean) ** 2
 
-    var_size = len(data) - 1
-    return var_sum / var_size
+    # using eff_size-1 instead of eff_size based on Bessel's correction
+    return eff_data_sum / (eff_size - 1)
 
 
 def linear_regression(xs: list[sint], ys: list[sint]):

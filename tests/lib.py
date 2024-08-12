@@ -138,13 +138,16 @@ def run_pystats_func(
 ): 
     party_ids = list(range(num_params))
     col1 = player_data[party_ids[0]][selected_col]
+    print(f'col1: {col1}')
     col1 = exclude_magic_number(col1)
+    print(f'col1 excl M: {col1}')
 
     if num_params == 1:
         return func(col1) 
 
     elif num_params == 2:
         col2 = player_data[party_ids[1]][selected_col]
+        print(f'col2: {col2}')
         col2 = exclude_magic_number(col2)
         return func(col1, col2) 
     else:
@@ -190,6 +193,7 @@ def execute_stat_func_test(
         mpc_script,
         'testmpc',
     )
+    print(f'stdout:{mpspdz_stdout}')
     mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
 
     pystats_res = run_pystats_func(
