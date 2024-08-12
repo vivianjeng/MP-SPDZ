@@ -355,7 +355,7 @@ def test_linear_regression_success():
     def vector_res_parser(x):
         return [x.slope, x.intercept]
 
-    player_data = gen_player_data(30, 2, 2, -100, 100, 0)
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0.5)
     execute_stat_func_test(
         mpcstats_lib.linear_regression,
         statistics.linear_regression,

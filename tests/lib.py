@@ -74,19 +74,21 @@ def create_player_data_files(data_dir, player_data):
                 f.write(' '.join(map(str, col)))
                 f.write('\n')
 
+def gen_magic_num_indices(rows, magic_num_rate):
+    num_magic_nums = int(rows * magic_num_rate)
+    return random.sample(range(rows), num_magic_nums)
+
 def generate_col(
     rows,
-    magic_num_rate,
+    magic_num_indices,
     range_beg,
     range_end,
 ):
     # generate column with random numbers
     col = [random.randrange(range_beg, range_end) for _ in range(rows)]
 
-    # replace numbers with magic numbers at a given rate
-    num_magic_nums = int(rows * magic_num_rate)
-    magic_num_idxs = random.sample(range(rows), num_magic_nums)
-    for idx in magic_num_idxs:
+    # replace numbers by magic numbers
+    for idx in magic_num_indices:
         col[idx] = MAGIC_NUMBER
 
     return col
@@ -99,11 +101,13 @@ def gen_player_data(
     range_end,
     magic_num_rate,
 ):
+    magic_num_indices = gen_magic_num_indices(rows, magic_num_rate)
+
     res = []
     for _ in range(num_parties):
         mat = []
         for _ in range(cols):
-            col = generate_col(rows, magic_num_rate, range_beg, range_end)
+            col = generate_col(rows, magic_num_indices, range_beg, range_end)
             mat.append(col)
         res.append(mat)
 

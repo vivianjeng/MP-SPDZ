@@ -232,23 +232,19 @@ def variance(data: list[sint]):
 
 
 def linear_regression(xs: list[sint], ys: list[sint]):
-    # each element in zip(xs, ys) is a data point, so
-    # xs and ys are assumed to have the same size
-
-    # calculate means of xs and ys
-    x_mean = mean(xs)
-    y_mean = mean(ys)
+    # zip(xs, ys) is a set of data points
 
     xs = Array.create_from(xs)
     ys = Array.create_from(ys)
 
-    # caclulate covariance of xs and ys
+    # calculate slope
     covar = covariance(xs, ys)
-
-    # calculate variance of xs
     var = variance(xs)
-
     slope = covar / var
+
+    # calculate intercept
+    x_mean = mean(xs)
+    y_mean = mean(ys)
     intercept = y_mean - slope * x_mean
 
     res = sfix.Array(2)
