@@ -232,7 +232,7 @@ def variance(data: list[sint]):
 
 
 def linear_regression(xs: list[sint], ys: list[sint]):
-    # zip(xs, ys) is a set of data points
+    # zip(xs, ys) is a list of data points
 
     xs = Array.create_from(xs)
     ys = Array.create_from(ys)
