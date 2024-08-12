@@ -33,11 +33,12 @@ def test_correlation_success():
     )
 
 def test_covariance_success():
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0.5)
     execute_stat_func_test(
         mpcstats_lib.covariance,
         statistics.covariance,
         num_params = 2,
-        player_data = player_data_4x2_2_party,
+        player_data = player_data,
         selected_col = 1,
         tolerance = 0.01,
     )
