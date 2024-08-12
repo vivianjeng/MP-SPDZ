@@ -153,6 +153,7 @@ def run_pystats_func(
         col2 = player_data[party_ids[1]][selected_col]
         print(f'col2: {col2}')
         col2 = exclude_magic_number(col2)
+        print(f'col2 excl M: {col2}')
         return func(col1, col2) 
     else:
         raise Exception(f'# of func params is expected to be 1 or 2, but got {num_params}')
