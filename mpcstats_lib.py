@@ -38,12 +38,33 @@ def print_data(data: Matrix):
             print_ln("data[{}][{}]: %s".format(i, j), data[i][j].reveal())
 
 
+def _mean(data: list[sint]) -> (sfloat, int):
+    total = sum(if_else(i != MAGIC_NUMBER, i, 0) for i in data)
+    count = sum(if_else(i != MAGIC_NUMBER, 1, 0) for i in data)
+    return sfloat(total / count), count
+
+
+def _variance(data: list[sint], use_bessels: bool) -> sfloat:
+    # calculate mean of the data excluding magic numbers
+    mean, eff_size = _mean(data)
+
+    # replace magic number w/ mean to skip magic number in for loop below
+    data = Array.create_from(if_else(n != MAGIC_NUMBER, n, mean) for n in data)
+
+    eff_data_sum = sfloat(0)
+    for n in data:
+        eff_data_sum += (n - mean) ** 2
+
+    if use_bessels:
+        eff_size -= 1
+
+    return sfloat(eff_data_sum / eff_size)
+
+
 # Top 5 functions to implement
 
 def mean(data: list[sint]):
-    total = sum(if_else(i != MAGIC_NUMBER, i, 0) for i in data)
-    count = sum(if_else(i != MAGIC_NUMBER, 1, 0) for i in data)
-    return total / count
+    return _mean(data)[0]
 
 
 def median(data: list[sint]):
@@ -127,11 +148,8 @@ def join(data1: Matrix, data2: Matrix, data1_column_index: int, data2_column_ind
 
 def covariance(data1: list[sint], data2: list[sint]):
     n = len(data1)
-    total1 = sum(if_else(i!= MAGIC_NUMBER, i, 0) for i in data1)
-    total2 = sum(if_else(i!= MAGIC_NUMBER, i, 0) for i in data2)
-    count = sum(if_else(i!= MAGIC_NUMBER, 1, 0) for i in data1)
-    mean1 = total1/count
-    mean2 = total2/count
+    mean1, count = _mean(data1)
+    mean2, _ = _mean(data2)
     data1 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean1) for i in data1)
     data2 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean2) for i in data2)
     # TODO: Check if there's a need to use sfloat(0), can we do something like 0.0
@@ -144,11 +162,8 @@ def covariance(data1: list[sint], data2: list[sint]):
 
 def correlation(data1: list[sint], data2: list[sint]):
     n = len(data1)
-    total1 = sum(if_else(i!= MAGIC_NUMBER, i, 0) for i in data1)
-    total2 = sum(if_else(i!= MAGIC_NUMBER, i, 0) for i in data2)
-    count = sum(if_else(i!= MAGIC_NUMBER, 1, 0) for i in data1)
-    mean1 = total1/count
-    mean2 = total2/count
+    mean1, count = _mean(data1)
+    mean2, _ = _mean(data2)
     data1 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean1) for i in data1)
     data2 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean2) for i in data2)
     numerator = sfloat(0)
@@ -215,20 +230,7 @@ def mode(data: list[sint]):
 
 
 def variance(data: list[sint]):
-    # calculate mean of the data excluding magic numbers
-    eff_size = sum(if_else(n != MAGIC_NUMBER, 1, 0) for n in data)
-    eff_total = sum(if_else(n != MAGIC_NUMBER, n, 0) for n in data)
-    mean = eff_total / eff_size
-
-    # replace magic number w/ mean to skip magic number in for loop below
-    data = Array.create_from(if_else(n != MAGIC_NUMBER, n, mean) for n in data)
-
-    eff_data_sum = sfloat(0)
-    for n in data:
-        eff_data_sum += (n - mean) ** 2
-
-    # using eff_size-1 instead of eff_size based on Bessel's correction
-    return eff_data_sum / (eff_size - 1)
+    return _variance(data, True)
 
 
 def linear_regression(xs: list[sint], ys: list[sint]):
@@ -243,13 +245,14 @@ def linear_regression(xs: list[sint], ys: list[sint]):
     slope = covar / var
 
     # calculate intercept
-    x_mean = mean(xs)
-    y_mean = mean(ys)
+    x_mean = _mean(xs)[0]
+    y_mean = _mean(ys)[0]
     intercept = y_mean - slope * x_mean
 
     res = sfix.Array(2)
     res.assign([slope, intercept])
     return res
+
 
 def harmonic_mean(data: list[sint]):
     eff_size = sum(if_else(n != MAGIC_NUMBER, 1, 0) for n in data)
@@ -259,16 +262,15 @@ def harmonic_mean(data: list[sint]):
 
 
 def pvariance(data: list[sint]):
-    # TODO: implement pvariance
-    raise NotImplementedError
+    return _variance(data, False)
 
 
 def pstdev(data: list[sint]):
-    # TODO: implement pstdev
-    raise NotImplementedError
+    pvar = _variance(data, False)
+    return sqrt(sfix(pvar))
 
 
 def stdev(data: list[sint]):
-    # TODO: implement stdev
-    raise NotImplementedError
+    var = _variance(data, True)
+    return sqrt(sfix(var))
 

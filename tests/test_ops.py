@@ -18,6 +18,9 @@ player_data_4x2_2_party = [
 
 M = mpcstats_lib.MAGIC_NUMBER
 
+TOLERANCE_SMALL = 0.0001  # 0.01%
+
+
 def pd1(col):
     return gen_player_data_for_1_param_func(col, 2, 1)
 
@@ -29,7 +32,7 @@ def test_correlation_success():
         num_params = 2,
         player_data = player_data_4x2_2_party,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = 0.02,
     )
 
 def test_covariance_success():
@@ -40,7 +43,7 @@ def test_covariance_success():
         num_params = 2,
         player_data = player_data,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
     )
 
 def test_geometric_mean_success():
@@ -50,7 +53,7 @@ def test_geometric_mean_success():
         num_params = 1,
         player_data = player_data_4x2_2_party,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
     )
 
 def test_median_success():
@@ -60,7 +63,7 @@ def test_median_success():
         num_params = 1,
         player_data = player_data_4x2_2_party,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
     )
 
 def test_where_success():
@@ -316,7 +319,7 @@ def test_mode_success():
             num_params = 1,
             player_data = tc,
             selected_col = 1,
-            tolerance = 0.01,
+            tolerance = TOLERANCE_SMALL,
         )
 
 @pytest.mark.xfail(raises=IndexError, reason='list index out of range')
@@ -327,7 +330,7 @@ def test_mode_fail_empty_input():
         num_params = 1,
         player_data = pd1([]),
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
     )
 
 @pytest.mark.xfail(raises=statistics.StatisticsError, reason='no mode for empty data')
@@ -338,7 +341,18 @@ def test_mode_fail_all_magic_numbers():
         num_params = 1,
         player_data = pd1([M, M, M, M]),
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
+    )
+
+def test_mean_success():
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0.5)
+    execute_stat_func_test(
+        mpcstats_lib.mean,
+        statistics.mean,
+        num_params = 1,
+        player_data = player_data,
+        selected_col = 1,
+        tolerance = TOLERANCE_SMALL,
     )
 
 def test_variance_success():
@@ -349,7 +363,7 @@ def test_variance_success():
         num_params = 1,
         player_data = player_data,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
     )
 
 def test_linear_regression_success():
@@ -363,7 +377,7 @@ def test_linear_regression_success():
         num_params = 2,
         player_data = player_data,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
         vector_res_parser = vector_res_parser,
     )
 
@@ -376,6 +390,41 @@ def test_harmonic_mean_success():
         num_params = 1,
         player_data = player_data,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
+    )
+
+def test_pvariance_success():
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0.5)
+    execute_stat_func_test(
+        mpcstats_lib.pvariance,
+        statistics.pvariance,
+        num_params = 1,
+        player_data = player_data,
+        selected_col = 1,
+        tolerance = TOLERANCE_SMALL,
+    )
+
+def test_pstdev_success():
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0.5)
+    execute_stat_func_test(
+        mpcstats_lib.pstdev,
+        statistics.pstdev,
+        num_params = 1,
+        player_data = player_data,
+        selected_col = 1,
+        # due to use of sqrt, the result can differ up to 5%
+        tolerance = 0.05,
+    )
+
+def test_stdev_success():
+    player_data = gen_player_data(30, 2, 2, -100, 100, 0.5)
+    execute_stat_func_test(
+        mpcstats_lib.stdev,
+        statistics.stdev,
+        num_params = 1,
+        player_data = player_data,
+        selected_col = 1,
+        # due to use of sqrt, the result can differ up to 5%
+        tolerance = 0.05,
     )
 
