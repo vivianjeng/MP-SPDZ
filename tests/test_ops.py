@@ -367,3 +367,15 @@ def test_linear_regression_success():
         vector_res_parser = vector_res_parser,
     )
 
+def test_harmonic_mean_success():
+    # python harmonic_mean doesn't support negative values
+    player_data = gen_player_data(30, 2, 2, 0, 100, 0.5)
+    execute_stat_func_test(
+        mpcstats_lib.harmonic_mean,
+        statistics.harmonic_mean,
+        num_params = 1,
+        player_data = player_data,
+        selected_col = 1,
+        tolerance = 0.01,
+    )
+

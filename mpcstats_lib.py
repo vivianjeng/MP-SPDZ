@@ -251,21 +251,20 @@ def linear_regression(xs: list[sint], ys: list[sint]):
     res.assign([slope, intercept])
     return res
 
-
-# LATER
-
 def harmonic_mean(data: list[sint]):
-    # TODO: implement harmonic_mean
+    eff_size = sum(if_else(n != MAGIC_NUMBER, 1, 0) for n in data)
+    eff_inv_total = sum(if_else(n != MAGIC_NUMBER, sfloat(1/n), 0) for n in data)
+    eff_inv_mean = eff_inv_total / eff_size
+    return 1 / eff_inv_mean
+
+
+def pvariance(data: list[sint]):
+    # TODO: implement pvariance
     raise NotImplementedError
 
 
 def pstdev(data: list[sint]):
     # TODO: implement pstdev
-    raise NotImplementedError
-
-
-def pvariance(data: list[sint]):
-    # TODO: implement pvariance
     raise NotImplementedError
 
 
