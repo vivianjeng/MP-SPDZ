@@ -38,13 +38,13 @@ def print_data(data: Matrix):
             print_ln("data[{}][{}]: %s".format(i, j), data[i][j].reveal())
 
 
-def _mean(data: list[sint]) -> (sfloat, int):
+def _mean(data: list[sint]) -> (float, int):
     total = sum(if_else(i != MAGIC_NUMBER, i, 0) for i in data)
     count = sum(if_else(i != MAGIC_NUMBER, 1, 0) for i in data)
-    return sfloat(total / count), count
+    return total / count, count
 
 
-def _variance(data: list[sint], use_bessels: bool) -> sfloat:
+def _variance(data: list[sint], use_bessels: bool) -> float:
     # calculate mean of the data excluding magic numbers
     mean, eff_size = _mean(data)
 
@@ -58,7 +58,7 @@ def _variance(data: list[sint], use_bessels: bool) -> sfloat:
     if use_bessels:
         eff_size -= 1
 
-    return sfloat(eff_data_sum / eff_size)
+    return eff_data_sum / eff_size
 
 
 # Top 5 functions to implement

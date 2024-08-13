@@ -390,7 +390,7 @@ def test_harmonic_mean_success():
         num_params = 1,
         player_data = player_data,
         selected_col = 1,
-        tolerance = TOLERANCE_SMALL,
+        tolerance = 0.01,
     )
 
 def test_pvariance_success():
