@@ -260,11 +260,11 @@ def harmonic_mean(data: list[sint]):
     eff_inv_mean = eff_inv_total / eff_size
     result = 1 / eff_inv_mean
 
-    # statistics.harmonic_mean retuns zero if data contain zero
-    zero_found = 0
+    # statistics.harmonic_mean returns zero if data contain zero
+    num_zeros = 0
     for x in data:
-        zero_found += (x == 0)
-    result = 0 * (zero_found > 0) + result * (zero_found == 0)
+        num_zeros += (x == 0)
+    result *= (num_zeros == 0)
 
     return result
 
