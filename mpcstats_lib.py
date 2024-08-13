@@ -258,7 +258,15 @@ def harmonic_mean(data: list[sint]):
     eff_size = sum(if_else(n != MAGIC_NUMBER, 1, 0) for n in data)
     eff_inv_total = sum(if_else(n != MAGIC_NUMBER, 1/n, 0) for n in data)
     eff_inv_mean = eff_inv_total / eff_size
-    return 1 / eff_inv_mean
+    result = 1 / eff_inv_mean
+
+    # statistics.harmonic_mean retuns zero if data contain zero
+    zero_found = 0
+    for x in data:
+        zero_found += (x == 0)
+    result = 0 * (zero_found > 0) + result * (zero_found == 0)
+
+    return result
 
 
 def pvariance(data: list[sint]):

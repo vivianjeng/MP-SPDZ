@@ -381,9 +381,22 @@ def test_linear_regression_success():
         vector_res_parser = vector_res_parser,
     )
 
-def test_harmonic_mean_success():
+def test_harmonic_mean_non_zero_input_success():
     # python harmonic_mean doesn't support negative values
-    player_data = gen_player_data(30, 2, 2, 0, 100, 0.5)
+    player_data = gen_player_data(30, 2, 2, 1, 100, 0.5)
+    execute_stat_func_test(
+        mpcstats_lib.harmonic_mean,
+        statistics.harmonic_mean,
+        num_params = 1,
+        player_data = player_data,
+        selected_col = 1,
+        tolerance = 0.005,
+    )
+
+def test_harmonic_mean_input_contains_0_success():
+    # python harmonic_mean doesn't support negative values
+    player_data = gen_player_data(30, 2, 2, 1, 100, 0.5)
+    player_data[0][1][0] = 0
     execute_stat_func_test(
         mpcstats_lib.harmonic_mean,
         statistics.harmonic_mean,

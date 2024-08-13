@@ -173,8 +173,11 @@ def assert_mp_py_diff(mp, py, tolerance):
     py = float(py)
 
     if py == 0:
-        print(f'mp={mp}, py={py}, diff=?')
-        assert False
+        if mp == 0:
+            print(f'mp={mp}, py={py}, diff=0')
+        else:
+            print(f'mp={mp}, py={py}, diff=?')
+            assert False
     else:
         diff = (py - mp) / py
         print(f'mp={mp}, py={py}, diff={diff*100:.5f}%')
