@@ -390,7 +390,7 @@ def test_harmonic_mean_success():
         num_params = 1,
         player_data = player_data,
         selected_col = 1,
-        tolerance = 0.01,
+        tolerance = TOLERANCE_SMALL,
     )
 
 def test_pvariance_success():
@@ -412,7 +412,7 @@ def test_pstdev_success():
         num_params = 1,
         player_data = player_data,
         selected_col = 1,
-        # due to use of sqrt, the result can differ up to 5%
+        # due to use of sfix and sqrt, the result can differ up to 5%
         tolerance = 0.05,
     )
 
@@ -424,7 +424,7 @@ def test_stdev_success():
         num_params = 1,
         player_data = player_data,
         selected_col = 1,
-        # due to use of sqrt, the result can differ up to 5%
+        # due to use of sfix and sqrt, the result can differ up to 5%
         tolerance = 0.05,
     )
 

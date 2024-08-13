@@ -168,6 +168,18 @@ def extract_result_from_mpspdz_stdout(stdout):
 
     raise Exception('Result missing in MP-SPDZ output')
 
+def assert_mp_py_diff(mp, py, tolerance):
+    mp = float(mp)
+    py = float(py)
+
+    if py == 0:
+        print(f'mp={mp}, py={py}, diff=?')
+        assert False
+    else:
+        diff = (py - mp) / py
+        print(f'mp={mp}, py={py}, diff={diff*100:.5f}%')
+        assert abs(diff) < tolerance
+
 def execute_stat_func_test(
     mpcstats_func,
     pystats_func,
@@ -213,17 +225,9 @@ def execute_stat_func_test(
         pystats_res = vector_res_parser(pystats_res)
 
         for mp, py in zip(mpspdz_res, pystats_res):
-            mp = float(mp)
-            py = float(py)
-            diff = ((py - mp) / py)
-            print(f'mp={mp}, py={py}, diff={diff*100:.5f}%')
-            assert abs(diff) < tolerance
+            assert_mp_py_diff(mp, py, tolerance)
     else:
-        mp = float(mpspdz_res)
-        py = float(pystats_res)
-        diff = ((py - mp) / py)
-        print(f'mp={mp}, py={py}, diff={diff*100:.5f}%')
-        assert abs(diff) < tolerance
+        assert_mp_py_diff(mpspdz_res, pystats_res, tolerance)
 
 def execute_elem_filter_test(
     func,
