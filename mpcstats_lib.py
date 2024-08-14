@@ -260,7 +260,9 @@ def harmonic_mean(data: list[sint]):
     eff_inv_mean = eff_inv_total / eff_size
     result = 1 / eff_inv_mean
 
-    # statistics.harmonic_mean returns zero if data contain zero
+    # mpspdz doesn't raise division-by-zero error when data contains zeros
+    # whereas statistics.harmonic_mean returns zero if data contain zeros
+    # this aligns the behavior with the python counterpart
     num_zeros = 0
     for x in data:
         num_zeros += (x == 0)
