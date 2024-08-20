@@ -10,14 +10,6 @@ from Compiler.mpc_math import sqrt, exp2_fx, log2_fx
 
 MAGIC_NUMBER = 999
 
-# To enforce round to the nearest integer, instead of probabilistic truncation
-# Ref: https://github.com/data61/MP-SPDZ/blob/e93190f3b72ee2d27837ca1ca6614df6b52ceef2/doc/machine-learning.rst?plain=1#L347-L353
-sfix.round_nearest = True
-
-f = 22 # length of decimal part
-k = 62 - f # whole bit length of fixed point. must be at least f+11
-sfix.set_precision(f, k)
-
 def read_data(party_index: int, num_columns: int, num_rows: int) -> Matrix:
     """
     Read data from each party's input file to a Matrix in MP-SPDZ circuit.

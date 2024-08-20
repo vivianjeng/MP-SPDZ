@@ -1,9 +1,11 @@
 from Compiler.library import print_ln
 from Compiler.compilerLib import Compiler
+from Compiler.types import sfix
 
 from mpcstats_lib import MAGIC_NUMBER, read_data
 from pathlib import Path
 import ast, glob, os, random, re, shutil, statistics, subprocess, sys
+from dataclasses import dataclass
 
 def load_to_matrices(player_data):
     return [read_data(i, len(p), len(p[0])) for i,p in enumerate(player_data)]
@@ -37,15 +39,33 @@ def gen_stat_func_comp(
     else:
         raise Exception(f'# of func params is expected to be 1 or 2, but got {num_params}')
 
+@dataclass
+class DefaultMPSPDZConfig:
+    # To enforce round to the nearest integer, instead of probabilistic truncation
+    # Ref: https://github.com/data61/MP-SPDZ/blob/e93190f3b72ee2d27837ca1ca6614df6b52ceef2/doc/machine-learning.rst?plain=1#L347-L353
+    round_nearest: bool = True
+
+    # length of the decimal part of sfix
+    f: int = 22
+
+    # whole bit length of sfix. must be at least f+11
+    k: int = 40
+
 def run_mpcstats_func(
     computation,
     num_parties,
     mpc_script,
     prog,
+    cfg = DefaultMPSPDZConfig(),
 ):
+    def init_and_compute():
+        sfix.round_nearest = cfg.round_nearest
+        sfix.set_precision(cfg.f, cfg.k)
+        computation()
+
     # compile .x
     compiler = Compiler()
-    compiler.register_function(prog)(computation)
+    compiler.register_function(prog)(init_and_compute)
     compiler.compile_func()
 
     # execute .x
