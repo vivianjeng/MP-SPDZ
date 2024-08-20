@@ -19,11 +19,11 @@ def read_data(party_index: int, num_columns: int, num_rows: int) -> Matrix:
     """
     Read data from each party's input file to a Matrix in MP-SPDZ circuit.
     """
-    data = Matrix(num_columns, num_rows, sint)
+    data = Matrix(num_columns, num_rows, sfix)
     # TODO: use @for_range_opt instead?
     for i in range(num_columns):
         for j in range(num_rows):
-            data[i][j] = sint.get_input_from(party_index)
+            data[i][j] = sfix.get_input_from(party_index)
     return data
 
 
@@ -38,20 +38,20 @@ def print_data(data: Matrix):
             print_ln("data[{}][{}]: %s".format(i, j), data[i][j].reveal())
 
 
-def _mean(data: list[sint]) -> (float, int):
-    total = sum(if_else(i != MAGIC_NUMBER, i, 0) for i in data)
-    count = sum(if_else(i != MAGIC_NUMBER, 1, 0) for i in data)
+def _mean(data: list[sfix]) -> (sfix, sfix):
+    total = sfix(sum(if_else(i != MAGIC_NUMBER, i, 0) for i in data))
+    count = sfix(sum(if_else(i != MAGIC_NUMBER, 1, 0) for i in data))
     return total / count, count
 
 
-def _variance(data: list[sint], use_bessels: bool) -> float:
+def _variance(data: list[sfix], use_bessels: bool) -> sfix:
     # calculate mean of the data excluding magic numbers
     mean, eff_size = _mean(data)
 
     # replace magic number w/ mean to skip magic number in for loop below
     data = Array.create_from(if_else(n != MAGIC_NUMBER, n, mean) for n in data)
 
-    eff_data_sum = sfloat(0)
+    eff_data_sum = sfix(0)
     for n in data:
         eff_data_sum += (n - mean) ** 2
 
@@ -63,27 +63,27 @@ def _variance(data: list[sint], use_bessels: bool) -> float:
 
 # Top 5 functions to implement
 
-def mean(data: list[sint]):
+def mean(data: list[sfix]) -> sfix:
     return _mean(data)[0]
 
 
-def median(data: list[sint]):
+def median(data: list[sfix]):
     # TODO: Check if Array.create_from is properly constrained // if I dont put reference, it's just from the mp-spdz doc itself
     data = Array.create_from(data)
-    # TODO: Check if there's a need to use sint(0), can we just use 0? would that violate constraint?
-    median_odd = sint(0)
-    median_even = sint(0)
+    # TODO: Check if there's a need to use sfix(0), can we just use 0? would that violate constraint?
+    median_odd = sfix(0)
+    median_even = sfix(0)
     data.sort()
     size = sum(if_else(i!= MAGIC_NUMBER, 1, 0) for i in data)
 
     # TODO: Check if for_range is any different than naive Python for-loop
     @for_range(len(data))
     def _(i):
-        # TODO: Check if wrapping sint() makes sense/ properly constrained
+        # TODO: Check if wrapping sfix() makes sense/ properly constrained
         # TODO: Check why we cannot just use size.int_div(2) -> it returns wrong result, so now we use the method below instead.
-        median_odd.update(median_odd+(size==2*sint(i)+size%2)*data[i])
+        median_odd.update(median_odd+(size==2*sfix(i)+size%2)*data[i])
         # TODO: Check if there's the need to use update: See example in Compiler.library.for_range(start, stop=None, step=None) in the mp-spdz doc itself
-        median_even.update(median_even+(size==2*sint(i)+size%2)*data[i]/2+(size-2==2*sint(i)+size%2)*data[i]/2)
+        median_even.update(median_even+(size==2*sfix(i)+size%2)*data[i]/2+(size-2==2*sfix(i)+size%2)*data[i]/2)
     # TODO: Check if size%2 is properly constrained
     return (size%2)*median_odd + (1-size%2)*median_even
 
@@ -118,7 +118,7 @@ def join(data1: Matrix, data2: Matrix, data1_column_index: int, data2_column_ind
     num_columns_2 = data2.shape[0]
     num_rows_2 = data2.shape[1]
 
-    new_data = Matrix(num_columns_1 + num_columns_2, num_rows_1, sint)
+    new_data = Matrix(num_columns_1 + num_columns_2, num_rows_1, sfix)
     # Initialize the first part of the matrix with data1
     for i in range(num_columns_1):
         for j in range(num_rows_1):
@@ -146,29 +146,29 @@ def join(data1: Matrix, data2: Matrix, data1_column_index: int, data2_column_ind
     return new_data
 
 
-def covariance(data1: list[sint], data2: list[sint]):
+def covariance(data1: list[sfix], data2: list[sfix]):
     n = len(data1)
     mean1, count = _mean(data1)
     mean2, _ = _mean(data2)
     data1 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean1) for i in data1)
     data2 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean2) for i in data2)
     # TODO: Check if there's a need to use sfloat(0), can we do something like 0.0
-    x = sfloat(0)
+    x = sfix(0)
     @for_range(n)
     def _(i):
         x.update(x+(data1[i]-mean1)*(data2[i]-mean2))
     return x/(count-1)
 
 
-def correlation(data1: list[sint], data2: list[sint]):
+def correlation(data1: list[sfix], data2: list[sfix]):
     n = len(data1)
     mean1, count = _mean(data1)
     mean2, _ = _mean(data2)
     data1 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean1) for i in data1)
     data2 = Array.create_from(if_else(i!=MAGIC_NUMBER, i, mean2) for i in data2)
-    numerator = sfloat(0)
-    denominator1 = sfloat(0)
-    denominator2 = sfloat(0)
+    numerator = sfix(0)
+    denominator1 = sfix(0)
+    denominator2 = sfix(0)
     @for_range(n)
     def _(i):
         numerator.update(numerator+(data1[i]-mean1)*(data2[i]-mean2))
@@ -178,29 +178,29 @@ def correlation(data1: list[sint], data2: list[sint]):
     return numerator/(sqrt(sfix(denominator1))*sqrt(sfix(denominator2)))
 
 
-def where(_filter: list[sint], data: list[sint]):
+def where(_filter: list[sfix], data: list[sfix]):
     n = len(data)
     data = Array.create_from(data)
     _filter = Array.create_from(_filter)
-    res = sint.Array(n)
+    res = sfix.Array(n)
     @for_range(n)
     def _(i):
         res[i] = if_else(_filter[i], data[i], MAGIC_NUMBER)
     return res
 
 
-def geometric_mean(data: list[sint]):
-    log_sum = sum(if_else(i != MAGIC_NUMBER, log2_fx(i), 0) for i in data)
-    num_log_sums = sum(if_else(i != MAGIC_NUMBER, 1, 0) for i in data)
+def geometric_mean(data: list[sfix]):
+    log_sum = sfix(sum(if_else(i != MAGIC_NUMBER, log2_fx(i), 0) for i in data))
+    num_log_sums = sfix(sum(if_else(i != MAGIC_NUMBER, 1, 0) for i in data))
     exponent = log_sum / num_log_sums
 
     return exp2_fx(exponent)
 
 
-def mode(data: list[sint]):
+def mode(data: list[sfix]):
     n = len(data)
     data = Array.create_from(data)
-    freqs = sint.Array(n)
+    freqs = sint.Array(n) # sfix doesn't support greater_than
 
     # find frequency of each element in data
     for i, x in enumerate(data):
@@ -208,7 +208,7 @@ def mode(data: list[sint]):
             sum(if_else(x == data[i], 1, 0) for x in data))
 
     # find the highest frequency
-    highest_freq = sint(0)
+    highest_freq = sint(0) # sfix doesn't support if_else
     @for_range(n)
     def _(i):
         highest_freq.update(
@@ -218,7 +218,7 @@ def mode(data: list[sint]):
         ))
 
     # get the first occurrence of the highest frequency element in data
-    highest = sint(0)
+    highest = sfix(0)
     @for_range(n-1, -1, -1)
     def _(i):
         highest.update(if_else(freqs[i] == highest_freq,
@@ -229,11 +229,13 @@ def mode(data: list[sint]):
     return highest
 
 
-def variance(data: list[sint]):
+def variance(data: list[sfix]):
     return _variance(data, True)
 
 
-def linear_regression(xs: list[sint], ys: list[sint]):
+# using the formula described in:
+# https://en.wikipedia.org/wiki/Simple_linear_regression
+def linear_regression(xs: list[sfix], ys: list[sfix]):
     # zip(xs, ys) is a list of data points
 
     xs = Array.create_from(xs)
@@ -254,11 +256,10 @@ def linear_regression(xs: list[sint], ys: list[sint]):
     return res
 
 
-def harmonic_mean(data: list[sint]):
-    eff_size = sum(if_else(n != MAGIC_NUMBER, 1, 0) for n in data)
-    eff_inv_total = sum(if_else(n != MAGIC_NUMBER, 1/n, 0) for n in data)
-    eff_inv_mean = eff_inv_total / eff_size
-    result = 1 / eff_inv_mean
+def harmonic_mean(data: list[sfix]):
+    eff_size = sfix(sum(if_else(n != MAGIC_NUMBER, 1, 0) for n in data))
+    eff_inv_total = sfix(sum(if_else(n != MAGIC_NUMBER, 1/n, 0) for n in data))
+    result = eff_size / eff_inv_total
 
     # mpspdz doesn't raise division-by-zero error when data contains zeros
     # whereas statistics.harmonic_mean returns zero if data contain zeros
@@ -271,16 +272,16 @@ def harmonic_mean(data: list[sint]):
     return result
 
 
-def pvariance(data: list[sint]):
+def pvariance(data: list[sfix]):
     return _variance(data, False)
 
 
-def pstdev(data: list[sint]):
+def pstdev(data: list[sfix]):
     pvar = _variance(data, False)
-    return sqrt(sfix(pvar))
+    return sqrt(pvar)
 
 
-def stdev(data: list[sint]):
+def stdev(data: list[sfix]):
     var = _variance(data, True)
-    return sqrt(sfix(var))
+    return sqrt(var)
 
