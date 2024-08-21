@@ -1,9 +1,11 @@
 from Compiler.library import print_ln
 from Compiler.compilerLib import Compiler
+from Compiler.types import sfix
 
 from mpcstats_lib import MAGIC_NUMBER, read_data
 from pathlib import Path
 import ast, glob, os, random, re, shutil, statistics, subprocess, sys
+from dataclasses import dataclass
 
 def load_to_matrices(player_data):
     return [read_data(i, len(p), len(p[0])) for i,p in enumerate(player_data)]
@@ -37,15 +39,33 @@ def gen_stat_func_comp(
     else:
         raise Exception(f'# of func params is expected to be 1 or 2, but got {num_params}')
 
+@dataclass
+class DefaultMPSPDZConfig:
+    # To enforce round to the nearest integer, instead of probabilistic truncation
+    # Ref: https://github.com/data61/MP-SPDZ/blob/e93190f3b72ee2d27837ca1ca6614df6b52ceef2/doc/machine-learning.rst?plain=1#L347-L353
+    round_nearest: bool = True
+
+    # length of the decimal part of sfix
+    f: int = 22
+
+    # whole bit length of sfix. must be at least f+11
+    k: int = 40
+
 def run_mpcstats_func(
     computation,
     num_parties,
     mpc_script,
     prog,
+    cfg = DefaultMPSPDZConfig(),
 ):
+    def init_and_compute():
+        sfix.round_nearest = cfg.round_nearest
+        sfix.set_precision(cfg.f, cfg.k)
+        computation()
+
     # compile .x
     compiler = Compiler()
-    compiler.register_function(prog)(computation)
+    compiler.register_function(prog)(init_and_compute)
     compiler.compile_func()
 
     # execute .x
@@ -74,19 +94,21 @@ def create_player_data_files(data_dir, player_data):
                 f.write(' '.join(map(str, col)))
                 f.write('\n')
 
+def gen_magic_num_indices(rows, magic_num_rate):
+    num_magic_nums = int(rows * magic_num_rate)
+    return random.sample(range(rows), num_magic_nums)
+
 def generate_col(
     rows,
-    magic_num_rate,
+    magic_num_indices,
     range_beg,
     range_end,
 ):
     # generate column with random numbers
     col = [random.randrange(range_beg, range_end) for _ in range(rows)]
 
-    # replace numbers with magic numbers at a given rate
-    num_magic_nums = int(rows * magic_num_rate)
-    magic_num_idxs = random.sample(range(rows), num_magic_nums)
-    for idx in magic_num_idxs:
+    # replace numbers by magic numbers
+    for idx in magic_num_indices:
         col[idx] = MAGIC_NUMBER
 
     return col
@@ -99,11 +121,13 @@ def gen_player_data(
     range_end,
     magic_num_rate,
 ):
+    magic_num_indices = gen_magic_num_indices(rows, magic_num_rate)
+
     res = []
     for _ in range(num_parties):
         mat = []
         for _ in range(cols):
-            col = generate_col(rows, magic_num_rate, range_beg, range_end)
+            col = generate_col(rows, magic_num_indices, range_beg, range_end)
             mat.append(col)
         res.append(mat)
 
@@ -138,14 +162,18 @@ def run_pystats_func(
 ): 
     party_ids = list(range(num_params))
     col1 = player_data[party_ids[0]][selected_col]
+    print(f'col1: {col1}')
     col1 = exclude_magic_number(col1)
+    print(f'col1 excl M: {col1}')
 
     if num_params == 1:
         return func(col1) 
 
     elif num_params == 2:
         col2 = player_data[party_ids[1]][selected_col]
+        print(f'col2: {col2}')
         col2 = exclude_magic_number(col2)
+        print(f'col2 excl M: {col2}')
         return func(col1, col2) 
     else:
         raise Exception(f'# of func params is expected to be 1 or 2, but got {num_params}')
@@ -160,6 +188,21 @@ def extract_result_from_mpspdz_stdout(stdout):
 
     raise Exception('Result missing in MP-SPDZ output')
 
+def assert_mp_py_diff(mp, py, tolerance):
+    mp = float(mp)
+    py = float(py)
+
+    if py == 0:
+        if mp == 0:
+            print(f'mp={mp}, py={py}, diff=0')
+        else:
+            print(f'mp={mp}, py={py}, diff=?')
+            assert False
+    else:
+        diff = (py - mp) / py
+        print(f'mp={mp}, py={py}, diff={diff*100:.5f}%')
+        assert abs(diff) < tolerance
+
 def execute_stat_func_test(
     mpcstats_func,
     pystats_func,
@@ -167,6 +210,7 @@ def execute_stat_func_test(
     player_data,
     selected_col,
     tolerance,
+    vector_res_parser = None, # None or callable 
 ):
     computation = gen_stat_func_comp(
         player_data,
@@ -189,6 +233,7 @@ def execute_stat_func_test(
         mpc_script,
         'testmpc',
     )
+    print(f'stdout:{mpspdz_stdout}')
     mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
 
     pystats_res = run_pystats_func(
@@ -197,8 +242,15 @@ def execute_stat_func_test(
         selected_col,
         pystats_func,
     )
-    print(f'---> mp: {mpspdz_res}, py: {pystats_res}')
-    assert abs(float(mpspdz_res) - pystats_res) < tolerance
+
+    if callable(vector_res_parser):
+        mpspdz_res = ast.literal_eval(mpspdz_res) 
+        pystats_res = vector_res_parser(pystats_res)
+
+        for mp, py in zip(mpspdz_res, pystats_res):
+            assert_mp_py_diff(mp, py, tolerance)
+    else:
+        assert_mp_py_diff(mpspdz_res, pystats_res, tolerance)
 
 def execute_elem_filter_test(
     func,
