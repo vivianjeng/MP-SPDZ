@@ -49,10 +49,6 @@ def _variance(data: list[sfix], use_bessels: bool) -> sfix:
     eff_data_sum = sfix(0)
     for n in data:
         eff_data_sum.update(eff_data_sum + (n - mean) ** 2)
-        #eff_data_sum += (n - mean) ** 2
-    # @for_range(len(data))
-    # def _(i):
-    #     eff_data_sum.update(eff_data_sum + (data[i] - mean) ** 2)
 
     if use_bessels:
         eff_size -= 1
