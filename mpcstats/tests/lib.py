@@ -1,9 +1,15 @@
+from pathlib import Path
+repo_root = Path(__file__).parent.parent.parent
+mpcstats_dir = repo_root / 'mpcstats'
+
+import sys
+sys.path.append(str(repo_root))
+sys.path.append(f'{repo_root}/mpcstats')
+
 from Compiler.library import print_ln
 from Compiler.compilerLib import Compiler
 from Compiler.types import sfix
-
 from mpcstats_lib import MAGIC_NUMBER, read_data
-from pathlib import Path
 import ast, glob, os, random, re, shutil, statistics, subprocess, sys
 from dataclasses import dataclass
 
@@ -219,13 +225,11 @@ def execute_stat_func_test(
         num_params,
     )
 
-    root = Path(__file__).parent.parent
-
-    data_dir = root / "Player-Data"
+    data_dir = mpcstats_dir / 'Player-Data'
     create_player_data_files(data_dir, player_data)
 
     protocol = 'semi'
-    mpc_script = root / 'Scripts' / f'{protocol}.sh'
+    mpc_script = repo_root / 'Scripts' / f'{protocol}.sh'
     num_parties = len(player_data)
     mpspdz_stdout = run_mpcstats_func(
         computation,
@@ -267,13 +271,11 @@ def execute_elem_filter_test(
         res = func(elem_filter, col).reveal()
         print_ln('result: %s', res)
 
-    root = Path(__file__).parent.parent
-
-    data_dir = root / "Player-Data"
+    data_dir = mpcstats_dir / "Player-Data"
     create_player_data_files(data_dir, player_data)
 
     protocol = 'semi'
-    mpc_script = root / 'Scripts' / f'{protocol}.sh'
+    mpc_script = repo_root / 'Scripts' / f'{protocol}.sh'
     num_parties = len(player_data)
     mpspdz_stdout = run_mpcstats_func(
         computation,
@@ -293,9 +295,7 @@ def execute_join_test(
     p2_key_col,
     exp_m,
 ):
-    root = Path(__file__).parent.parent
-
-    data_dir = root / "Player-Data"
+    data_dir = mpcstats_dir / 'Player-Data'
     create_player_data_files(data_dir, player_data)
 
     def computation():
@@ -309,7 +309,8 @@ def execute_join_test(
         print_ln('result: %s', res)
 
     protocol = 'semi'
-    mpc_script = root / 'Scripts' / f'{protocol}.sh'
+    mpc_script = repo_root / 'Scripts' / f'{protocol}.sh'
+    print(f'mpc_script: {mpc_script}')
     num_parties = len(player_data)
     mpspdz_stdout = run_mpcstats_func(
         computation,
@@ -320,5 +321,6 @@ def execute_join_test(
     mpspdz_res = extract_result_from_mpspdz_stdout(mpspdz_stdout)
     mpspdz_res_val = ast.literal_eval(mpspdz_res) 
 
+    print(f'---> {mpspdz_res_val}')
     assert mpspdz_res_val == exp_m
 
