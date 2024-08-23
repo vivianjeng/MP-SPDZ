@@ -1,3 +1,9 @@
+from pathlib import Path
+repo_root = Path(__file__).parent.parent.parent
+
+import sys
+sys.path.append(f'{repo_root}/mpcstats')
+
 import pytest, statistics
 
 import mpcstats_lib

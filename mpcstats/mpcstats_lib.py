@@ -2,6 +2,12 @@
 Contains functions can be used in MP-SPDZ circuits.
 """
 
+from pathlib import Path
+repo_root = Path(__file__).parent.parent
+
+import sys
+sys.path.append(str(repo_root))
+
 from Compiler.library import print_ln, for_range
 from Compiler.types import sint, sfix, Matrix, sfloat, Array
 from Compiler.util import if_else

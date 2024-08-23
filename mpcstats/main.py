@@ -1,15 +1,19 @@
 from pathlib import Path
+repo_root = Path(__file__).parent.parent
+
+import sys
+sys.path.append(str(repo_root))
+sys.path.append(f'{repo_root}/mpcstats')
+
 import os
 
 from Compiler.library import print_ln
 from Compiler.compilerLib import Compiler
-
 from mpcstats_lib import read_data, print_data, mean, join, median, covariance, correlation, where, geometric_mean
-
 
 MPC_PROTOCOL = "semi"
 PROGRAM_NAME = "testmpc"
-PROJECT_ROOT = Path(__file__).parent
+PROJECT_ROOT = Path(__file__).parent.parent
 SCRIPTS_DIR = PROJECT_ROOT / "Scripts"
 # E.g. Scripts/semi.sh testmpc
 LOCAL_EXECUTION_EXE = SCRIPTS_DIR / f"{MPC_PROTOCOL}.sh"
