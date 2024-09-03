@@ -8,6 +8,12 @@ git clone https://github.com/ZKStats/MP-SPDZ
 cd MP-SPDZ
 ```
 
+Install python dependencies.
+
+```bash
+ pip install -r requirements.txt
+```
+
 Install dependencies.
 
 ```bash
